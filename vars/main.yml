@@ -1,0 +1,3 @@
+---
+# vars file for emacs
+emacs_config: "{{ ansible_env.HOME }}/.emacs"

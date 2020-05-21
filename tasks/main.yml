@@ -1,0 +1,27 @@
+---
+# tasks file for emacs
+- name: Install emacs (homebrew_cask)
+  homebrew_cask:
+    name: emacs
+    state: present
+  when: ansible_os_family|lower == 'darwin'
+  tags: install
+
+# - name: Install emacs packages
+#   # shell: "/usr/local/bin/emacs --batch --eval \"(progn (package-initialize) (package-refresh-contents) (mapc 'package-install '(powerline doom-themes sr-speedbar airline-themes)))\""
+#   shell: "/usr/local/bin/emacs --batch --eval \"(progn (package-initialize) (package-refresh-contents) (mapc 'package-install '({{emacs.packages | list | join (' ')}})))\""
+#   changed_when: false
+#   tags: configure
+#   register: emacs_package_result
+
+# - debug:
+#     var: emacs_package_result
+    
+# - debug:
+#     msg: "System {{ inventory_hostname }} emacs install complete"
+
+- name: Write .emacs configuration
+  template:
+    src: emacs.j2
+    dest: "{{ emacs_config }}"
+    backup: yes

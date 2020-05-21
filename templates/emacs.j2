@@ -1,0 +1,129 @@
+(require 'package)
+{% if 'package_archives' in emacs %}
+{% for archive in emacs['package_archives'] %}
+(add-to-list 'package-archives '("{{ archive["name"] }}" . "{{ archive["url"] }}") t)
+{% endfor %}
+{% endif %}
+(package-initialize)
+
+(setq package-list '({{ emacs.packages | list | join(' ')}}))
+
+(require 'use-package)
+
+{% if 'packages' in emacs %}
+{% for package in emacs['packages'] %}
+(use-package {{ package['name'] }}
+  :ensure t
+{% if 'config' in package %}
+  :config
+  {{ package['config'] }}
+{% endif %})
+
+{% endfor %}
+{% endif %}
+
+(use-package doom-themes
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-palenight t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+  (doom-themes-treemacs-config)
+  
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+;; Clean up the display some
+(menu-bar-mode -1)
+(if (fboundp 'tool-bar-mode) 
+    (tool-bar-mode -1))
+(if (fboundp 'scroll-bar-mode)
+    (scroll-bar-mode -1))
+
+;; ;;;;;;;;;;;;;; ;;
+;; org-mode hacks ;;
+;; ;;;;;;;;;;;;;; ;;
+(add-hook 'org-mode-hook
+	  #'(lambda ()
+	      ;; make the lines in the buffer wrap around the edges of the screen.
+	      ;; to press C-c q  or fill-paragraph ever again!
+	      (visual-line-mode)
+	      (org-indent-mode)))
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)))
+
+;; disable the splace screen
+(setq inhibit-splash-screen t)
+
+;; I'm not sure what this does - but it was recommended by
+;; https://orgmode.org/worg/org-tutorials/org4beginners.html
+(transient-mark-mode 1)
+
+(defun my-org-screenshot ()
+  "Take a screenshot into a time stamped unique-named file in the
+same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (setq filename
+        (concat
+         (make-temp-name
+          (concat (buffer-file-name)
+                  "_"
+                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+  (call-process "import" nil nil nil filename)
+  (insert (concat "[[" filename "]]"))
+  (org-display-inline-images))
+
+(defun org-insert-clipboard-image (&optional file)
+  (interactive "F")
+  (shell-command (concat "pngpaste " file))
+  (insert (concat "[[file:" file "]]"))
+  (org-display-inline-images))
+
+;; (setq org-image-actual-width nil)
+
+;; prompt for a new when closing things off
+(setq org-log-done 'note)
+(setq org-agenda-files (list "~/org/house.org"
+                             "~/org/computer.org"))
+
+
+;; ;;;;;;;;;;;;; ;;
+;; UTF-8 Support ;;
+;; ;;;;;;;;;;;;; ;;
+
+;; the one true hack? https://emacs.stackexchange.com/a/46151/29014
+(set-language-environment "UTF-8")
+
+;; more settings from: https://stackoverflow.com/a/1674535/57626
+(setq-default buffer-file-coding-system 'utf-8-unix)
+(setq-default default-buffer-file-coding-system 'utf-8-unix)
+(set-default-coding-systems 'utf-8-unix)
+(prefer-coding-system 'utf-8-unix)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "c83c095dd01cde64b631fb0fe5980587deec3834dc55144a6e78ff91ebc80b19" "3c2f28c6ba2ad7373ea4c43f28fcf2eed14818ec9f0659b1c97d4e89c99e091e" "9efb2d10bfb38fe7cd4586afb3e644d082cbcdb7435f3d1e8dd9413cbe5e61fc" "a92e9da0fab90cbec4af4a2035602208cebf3d071ea547157b2bfc5d9bd4d48d" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "2f1518e906a8b60fac943d02ad415f1d8b3933a5a7f75e307e6e9a26ef5bf570" "56911bd75304fdb19619c9cb4c7b0511214d93f18e566e5b954416756a20cc80" "79278310dd6cacf2d2f491063c4ab8b129fee2a498e4c25912ddaa6c3c5b621e" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "1526aeed166165811eefd9a6f9176061ec3d121ba39500af2048073bea80911e" default)))
+ '(package-selected-packages
+   (quote
+    (org-mode org ## use-package mood-one-theme doom-themes airline-themes))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :background "#292D3E" :foreground "#EEFFFF" :height 150 :family "Cascadia Mono PL")))))
