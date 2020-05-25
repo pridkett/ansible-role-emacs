@@ -4,47 +4,64 @@
   homebrew_cask:
     name: emacs
     state: present
-  when: ansible_os_family|lower == 'darwin'
+  when: ansible_pkg_mgr == 'homebrew'
   tags: install
+
+- name: Install emacs (apt)
+  apt:
+    name: ['emacs', 'elpa-use-package']
+    state: present
+    update_cache: true
+  become: yes
+  tags: install
+  when: ansible_pkg_mgr == 'apt'
 
 # for Emacs 24-bit color support: https://stackoverflow.com/a/50577683/57626
 - name: Check for 24bit terminal support
-  stat:
-    path: ~/.terminfo/78/xterm-24bits
-  register: xterm24bit
+  shell:
+    cmd: if [ -d ~/.terminfo ]; then find ~/.terminfo -type f -name xterm-24bits; fi
+  register: find_xterm24bits
+  ignore_errors: true
   when: ansible_os_family|lower == 'debian' or ansible_os_family|lower == 'darwin'
+  tags: configure
 
 - name: Create temporary file for 24-bit emacs support
   tempfile:
     state: file
     suffix: temp
   register: tempfile_1
-  when: xterm24bit.stat is defined and xterm24bit.stat.exists == False
+  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+  tags: configure
 
 - name: Set up Emacs for 24-bit support
   copy:
     src: emacs-24-bit
     dest: "{{ tempfile_1.path }}"
-  when: xterm24bit.stat is defined and xterm24bit.stat.exists == False
+  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+  tags: configure
 
 - name: Compile Emacs 24-bit terminal
   shell: "tic -x -o ~/.terminfo {{ tempfile_1.path }}"
-  when: xterm24bit.stat is defined and xterm24bit.stat.exists == False
+  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+  tags: configure
 
 - name: Install 24 bit color zsh alias
   copy:
     src: emacs.zsh
-    dest: "{{ ansible_env.HOME }}/.zsh.d/emacs.zsh"
+    dest: "{{ ansible_env.HOME }}/.zshrc.d/emacs.zsh"
   when: emacs.install_zsh is defined and emacs.install_zsh == True
+  tags: configure
 
 - name: Install 24 bit color bash alias
   copy:
     src: emacs.sh
-    dest: "{{ ansible_env.HOME }}/.bash.d/emacs.sh"
+    dest: "{{ ansible_env.HOME }}/.bashrc.d/emacs.sh"
   when: emacs.install_bash is defined and emacs.install_bash == True
+  tags: configure
 
 - name: Write .emacs configuration
   template:
     src: emacs.j2
     dest: "{{ emacs_config }}"
     backup: yes
+  tags: configure
