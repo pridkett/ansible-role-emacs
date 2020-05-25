@@ -7,18 +7,41 @@
   when: ansible_os_family|lower == 'darwin'
   tags: install
 
-# - name: Install emacs packages
-#   # shell: "/usr/local/bin/emacs --batch --eval \"(progn (package-initialize) (package-refresh-contents) (mapc 'package-install '(powerline doom-themes sr-speedbar airline-themes)))\""
-#   shell: "/usr/local/bin/emacs --batch --eval \"(progn (package-initialize) (package-refresh-contents) (mapc 'package-install '({{emacs.packages | list | join (' ')}})))\""
-#   changed_when: false
-#   tags: configure
-#   register: emacs_package_result
+# for Emacs 24-bit color support: https://stackoverflow.com/a/50577683/57626
+- name: Check for 24bit terminal support
+  stat:
+    path: ~/.terminfo/78/xterm-24bits
+  register: xterm24bit
+  when: ansible_os_family|lower == 'debian' or ansible_os_family|lower == 'darwin'
 
-# - debug:
-#     var: emacs_package_result
-    
-# - debug:
-#     msg: "System {{ inventory_hostname }} emacs install complete"
+- name: Create temporary file for 24-bit emacs support
+  tempfile:
+    state: file
+    suffix: temp
+  register: tempfile_1
+  when: xterm24bit.stat is defined and xterm24bit.stat.exists == False
+
+- name: Set up Emacs for 24-bit support
+  copy:
+    src: emacs-24-bit
+    dest: "{{ tempfile_1.path }}"
+  when: xterm24bit.stat is defined and xterm24bit.stat.exists == False
+
+- name: Compile Emacs 24-bit terminal
+  shell: "tic -x -o ~/.terminfo {{ tempfile_1.path }}"
+  when: xterm24bit.stat is defined and xterm24bit.stat.exists == False
+
+- name: Install 24 bit color zsh alias
+  copy:
+    src: emacs.zsh
+    dest: "{{ ansible_env.HOME }}/.zsh.d/emacs.zsh"
+  when: emacs.install_zsh is defined and emacs.install_zsh == True
+
+- name: Install 24 bit color bash alias
+  copy:
+    src: emacs.sh
+    dest: "{{ ansible_env.HOME }}/.bash.d/emacs.sh"
+  when: emacs.install_bash is defined and emacs.install_bash == True
 
 - name: Write .emacs configuration
   template:

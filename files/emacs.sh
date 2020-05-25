@@ -1,0 +1,1 @@
+alias emacs="TERM=xterm-24bit emacs -nw"

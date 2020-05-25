@@ -1,7 +1,10 @@
-Role Name
-=========
+Emacs - Patrick's Fancy Emacs Role
+==================================
 
-A brief description of the role goes here.
+Patrick Wagstrom &lt;patrick@wagstrom.net&gt;
+
+May 2020
+
 
 Requirements
 ------------
@@ -11,7 +14,8 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- `emacs.install_zsh`: Whether or not a file `emacs.zsh` should be dropped into `~{{ ansible_env.HOME }}/.zsh.d` to allow for easier 24 bit color startup.
+- `emacs.install_bash`: Whether or not a file `emacs.sh` should be dropped into `~{{ ansible_env.HOME }}/.bash.d` to allow for easier 24 bit color startup.
 
 Dependencies
 ------------
@@ -30,9 +34,9 @@ Including an example of how to use your role (for instance, with variables passe
 License
 -------
 
-BSD
+MIT
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Patrick Wagstrom &lt;patrick@wagstrom.net&gt;
