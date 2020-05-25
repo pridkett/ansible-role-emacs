@@ -7,9 +7,17 @@
   when: ansible_pkg_mgr == 'homebrew'
   tags: install
 
+- name: Add emacs 26 apt repository for Ubuntu
+  apt_repository:
+    repo: ppa:kelleyk/emacs
+    state: present
+  become: yes
+  tags: install
+  when: ansible_pkg_mgr == 'apt'
+
 - name: Install emacs (apt)
   apt:
-    name: ['emacs', 'elpa-use-package']
+    name: ['emacs26-nox']
     state: present
     update_cache: true
   become: yes
@@ -46,8 +54,8 @@
   tags: configure
 
 - name: Install 24 bit color zsh alias
-  copy:
-    src: emacs.zsh
+  template:
+    src: emacs.zsh.j2
     dest: "{{ ansible_env.HOME }}/.zshrc.d/emacs.zsh"
   when: emacs.install_zsh is defined and emacs.install_zsh == True
   tags: configure

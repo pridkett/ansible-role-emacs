@@ -5,6 +5,9 @@
 ;; if you modify, it will get mangled ;;
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
 
+;; ;;;;;;;;;;;;;;;;;;;;;; ;;
+;; emacs package archives ;;
+;; ;;;;;;;;;;;;;;;;;;;;;; ;;
 (require 'package)
 {% if 'package_archives' in emacs %}
 {% for archive in emacs['package_archives'] %}
@@ -13,8 +16,36 @@
 {% endif %}
 (package-initialize)
 
-(require 'use-package)
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
+;; Handler for initializing use-package                                        ;;
+;; see:                                                                        ;;
+;;   https://github.com/jwiegley/use-package/issues/219#issuecomment-108882966 ;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
+(eval-when-compile
+  (require 'package)
+  (package-initialize t))
+(unless (boundp 'package-pinned-packages)
+  (setq package-pinned-packages ()))
 
+(defun require-package (package &optional min-version no-refresh)
+  "Install given PACKAGE, optionally requiring MIN-VERSION.
+If NO-REFRESH is non-nil, the available package lists will not be
+re-downloaded in order to locate PACKAGE."
+  (if (package-installed-p package min-version)
+      t
+    (if (or (assoc package package-archive-contents) no-refresh)
+        (package-install package)
+      (progn
+        (package-refresh-contents)
+        (require-package package min-version t)))))
+
+(eval-when-compile
+  (require-package 'use-package)
+  (require 'use-package))
+
+;; ;;;;;;;;;;;;;; ;;
+;; emacs packages ;;
+;; ;;;;;;;;;;;;;; ;;
 {% if 'packages' in emacs %}
 {% for package in emacs['packages'] %}
 (use-package {{ package['name'] }}

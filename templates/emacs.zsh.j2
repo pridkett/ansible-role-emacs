@@ -1,0 +1,6 @@
+{% if ansible_pkg_mgr == 'homebrew' %}
+alias emacs="TERM=xterm-24bits /usr/local/bin/emacs -nw"
+{% endif %}
+{% if ansible_pkg_mgr == 'apt' %}
+alias emacs="TERM=xterm-24bits /usr/bin/emacs26 -nw"
+{% endif %}
