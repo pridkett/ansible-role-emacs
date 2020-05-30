@@ -70,7 +70,7 @@
 - name: Install 24-bit color fish alias
   template:
     src: emacs.fish.j2
-    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d"
+    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d/emacs.fish"
   when: emacs.install_fish is defined and emacs.install_fish == True
   tags: configure
 
