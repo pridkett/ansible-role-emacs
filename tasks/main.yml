@@ -1,13 +1,13 @@
 ---
 # tasks file for emacs
-- name: Install emacs (homebrew_cask)
+- name: Install Emacs (homebrew_cask)
   homebrew_cask:
     name: emacs
     state: present
   when: ansible_pkg_mgr == 'homebrew'
   tags: install
 
-- name: Add emacs 26 apt repository for Ubuntu
+- name: Add Emacs 26 apt repository for Ubuntu
   apt_repository:
     repo: ppa:kelleyk/emacs
     state: present
@@ -15,7 +15,7 @@
   tags: install
   when: ansible_pkg_mgr == 'apt'
 
-- name: Install emacs (apt)
+- name: Install Emacs (apt)
   apt:
     name: ['emacs26-nox']
     state: present
@@ -25,7 +25,7 @@
   when: ansible_pkg_mgr == 'apt'
 
 # for Emacs 24-bit color support: https://stackoverflow.com/a/50577683/57626
-- name: Check for 24bit terminal support
+- name: Check for 24-bit termcap definition
   shell:
     cmd: if [ -d ~/.terminfo ]; then find ~/.terminfo -type f -name xterm-24bits; fi
   register: find_xterm24bits
@@ -53,19 +53,31 @@
   when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
   tags: configure
 
-- name: Install 24 bit color zsh alias
+- name: Install 24-bit color zsh alias
   template:
     src: emacs.zsh.j2
     dest: "{{ ansible_env.HOME }}/.zshrc.d/emacs.zsh"
   when: emacs.install_zsh is defined and emacs.install_zsh == True
   tags: configure
 
-- name: Install 24 bit color bash alias
-  copy:
-    src: emacs.sh
+- name: Install 24-bit color bash alias
+  template:
+    src: emacs.sh.j2
     dest: "{{ ansible_env.HOME }}/.bashrc.d/emacs.sh"
   when: emacs.install_bash is defined and emacs.install_bash == True
   tags: configure
+
+- name: Install 24-bit color fish alias
+  template:
+    src: emacs.fish.j2
+    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d"
+  when: emacs.install_fish is defined and emacs.install_fish == True
+  tags: configure
+
+- name: Create .emacs.d directory
+  file:
+    path: "{{ ansible_env.HOME }}/.emacs.d"
+    state: directory
 
 - name: Write .emacs configuration
   template:

@@ -14,8 +14,9 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 Role Variables
 --------------
 
-- `emacs.install_zsh`: Whether or not a file `emacs.zsh` should be dropped into `~{{ ansible_env.HOME }}/.zsh.d` to allow for easier 24 bit color startup.
-- `emacs.install_bash`: Whether or not a file `emacs.sh` should be dropped into `~{{ ansible_env.HOME }}/.bash.d` to allow for easier 24 bit color startup.
+- `emacs.install_zsh`: Whether or not a file `emacs.zsh` should be dropped into `~{{ ansible_env.HOME }}/.zsh.d` to allow for easier terminal 24-bit color startup.
+- `emacs.install_bash`: Whether or not a file `emacs.sh` should be dropped into `~{{ ansible_env.HOME }}/.bash.d` to allow for easier terminal 24-bit color startup.
+- `emacs.install_fish`: Whether or not a file `emacs.fish` should be dropped into `~{{ ansible_env.HOME }}/.config/fish/fish.d` to allow for easier terminal 24-bit color startup.
 
 Dependencies
 ------------
