@@ -15,7 +15,8 @@
 (add-to-list 'package-archives '("{{ archive["name"] }}" . "{{ archive["url"] }}") t)
 {% endfor %}
 {% endif %}
-(package-initialize)
+(if (< emacs-major-version 28)
+    (package-initialize))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
 ;; Handler for initializing use-package                                        ;;
