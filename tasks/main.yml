@@ -4,23 +4,39 @@
   homebrew_cask:
     name: emacs
     state: present
-  when: ansible_pkg_mgr == 'homebrew'
+  when: ansible_pkg_mgr == 'homebrew' and emacs_tap | bool == False
   tags: install
 
-- name: Add Emacs 26 apt repository for Ubuntu
-  apt_repository:
-    repo: ppa:kelleyk/emacs
-    state: present
-  become: yes
-  tags: install
-  when: ansible_pkg_mgr == 'apt'
+- name: Install emacs-head (homebrew compile)
+  block:
+    - name: Tap emacs-head (homebrew)
+      homebrew_tap:
+        name: daviderestivo/emacs-head
+        state: present
 
-- name: Install Emacs (apt)
-  apt:
-    name: ['emacs26-nox']
-    state: present
-    update_cache: true
-  become: yes
+    - name: Build emacs-head (homebrew)
+      homebrew:
+        name: emacs-head
+        install_options: "{{emacs_build_flags}}"
+        state: present
+
+  when: ansible_pkg_mgr == 'homebrew' and emacs_tap | bool == True
+
+- name: Install emacs26 (apt)
+  block:
+    - name: Add Emacs 26 apt repository for Ubuntu
+      apt_repository:
+        repo: ppa:kelleyk/emacs
+        state: present
+      become: yes
+
+    - name: Install Emacs (apt)
+      apt:
+        name: ['emacs26-nox']
+        state: present
+        update_cache: true
+      become: yes
+
   tags: install
   when: ansible_pkg_mgr == 'apt'
 
@@ -78,8 +94,9 @@
   file:
     path: "{{ ansible_env.HOME }}/.emacs.d"
     state: directory
+  tags: configure
 
-- name: Write .emacs configuration
+- name: "Write emacs configuration to {{ emacs_config }}"
   template:
     src: emacs.j2
     dest: "{{ emacs_config }}"
