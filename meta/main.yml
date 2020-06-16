@@ -14,6 +14,7 @@ galaxy_info:
     versions:
       - Sierra
       - High Sierra
+      - Mojave
       - Catalina
 
   galaxy_tags: []
