@@ -15,7 +15,7 @@
 (add-to-list 'package-archives '("{{ archive["name"] }}" . "{{ archive["url"] }}") t)
 {% endfor %}
 {% endif %}
-(if (< emacs-major-version 28)
+(if (< emacs-major-version 27)
     (package-initialize))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
