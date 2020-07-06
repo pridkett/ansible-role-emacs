@@ -2,4 +2,5 @@
 # vars file for emacs
 emacs_config: "{{ ansible_env.HOME }}/.emacs.d/init.el"
 emacs_build_flags: "{% if emacs.build_flags is defined %}{{ emacs.build_flags }}{% endif %}"
-emacs_tap: "{% if emacs.build_from_head is defined and emacs.build_from_head == True %}True{% endif %}"
+emacs_tap: "{% if emacs.install_from_head is defined and emacs.install_from_head == True %}True{% endif %}"
+emacs_bottled: "{% if emacs.build_flags is not defined %}True{% else %}False{% endif %}"

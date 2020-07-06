@@ -14,11 +14,18 @@
         name: daviderestivo/emacs-head
         state: present
 
+    - name: Install emacs-head from bottle (homebrew)
+      homebrew:
+        name: emacs-head@27
+        state: present
+      when: emacs_bottled | bool == True
+
     - name: Build emacs-head (homebrew)
       homebrew:
         name: emacs-head
         install_options: "{{emacs_build_flags}}"
         state: present
+      when: emacs_bottled | bool == False
 
   when: ansible_pkg_mgr == 'homebrew' and emacs_tap | bool == True
 
