@@ -18,6 +18,8 @@ Role Variables
 - `emacs.install_fish`: Whether or not a file `emacs.fish` should be dropped into `~{{ ansible_env.HOME }}/.config/fish/fish.d` to allow for easier terminal 24-bit color startup.
 - `emacs.install_from_head`: Whether or not emacs should be installed from the `daviderestive/emacs-head` recipe in homebrew. Defaults to `False`.
 - `emacs.build_flags`: Flags to pass to homebrew when building emacs. This is only used when `emacs.install_from_head` is `True`. If this is undefined and `emacs.install_from_head` is `True` then the bottled version of `daviderestivo/emacs-head@27` will be installed. In most cases, you should not need to set this variable. Setting it also makes it likely to break the recipe as the underlying recipe changes frequently.
+- `emacs.config`: emacs-lisp code that will put near the end of `~/.emacs.d/init.el` but before `emacs.config`. Functionally, this is used to distinguish between code blocks that may be overwritten by emacs customization and that which may not be overwritten.
+- `emacs.custom`: emacs-lisp code that will be put at the end of `~/.emacs.d/init.el`. This is generally used for anything that was set up through emacs in-editor configuration. Placing it here means that additional changes will work with the same block of code.
 
 Dependencies
 ------------
