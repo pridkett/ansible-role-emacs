@@ -1,33 +1,19 @@
 ---
 # tasks file for emacs
-- name: Install Emacs (homebrew_cask)
-  homebrew_cask:
-    name: emacs
-    state: present
-  when: ansible_pkg_mgr == 'homebrew' and emacs_tap | bool == False
-  tags: install
-
-- name: Install emacs-head (homebrew compile)
+- name: Install emacs-mac from Railwaycat's repo
   block:
-    - name: Tap emacs-head (homebrew)
+    - name: Tap railwaycat's emacs-mac (homebrew)
       homebrew_tap:
-        name: daviderestivo/emacs-head
+        name: railwaycat/emacsmacport
         state: present
 
-    - name: Install emacs-head from bottle (homebrew)
-      homebrew:
-        name: emacs-head@27
+    - name: Install emacs-mac from bottle (homebrew)
+      community.general.homebrew_cask:
+        name: emacs-mac
         state: present
-      when: emacs_bottled | bool == True
 
-    - name: Build emacs-head (homebrew)
-      homebrew:
-        name: emacs-head
-        install_options: "{{emacs_build_flags}}"
-        state: present
-      when: emacs_bottled | bool == False
-
-  when: ansible_pkg_mgr == 'homebrew' and emacs_tap | bool == True
+  tags: install 
+  when: ansible_pkg_mgr == 'homebrew'
 
 - name: Install emacs26 (apt)
   block:
