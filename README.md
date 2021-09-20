@@ -17,7 +17,9 @@ Role Variables
 - `emacs.install_bash`: Whether or not a file `emacs.sh` should be dropped into `~{{ ansible_env.HOME }}/.bash.d` to allow for easier terminal 24-bit color startup.
 - `emacs.install_fish`: Whether or not a file `emacs.fish` should be dropped into `~{{ ansible_env.HOME }}/.config/fish/fish.d` to allow for easier terminal 24-bit color startup.
 - `emacs.config`: emacs-lisp code that will put near the end of `~/.emacs.d/init.el` but before `emacs.custom`. Functionally, this is used to distinguish between code blocks that may be overwritten by emacs customization and that which may not be overwritten.
+- `emacs.create_initel`: Whether or not the script will try to create a templated `~/.emacs.d/init.el`. This defaults to `true`, set to `false` if you're going to be copying your configuration files from elsewhere.
 - `emacs.custom`: emacs-lisp code that will be put at the end of `~/.emacs.d/init.el`. This is generally used for anything that was set up through emacs in-editor configuration. Placing it here means that additional changes will work with the same block of code.
+- `emacs.copy_files`: a list of files to copy into your `~/.emacs.d/` directory. This is useful for when your configuration becomes really complicated and you want to use a completely custom `~/.emacs.d/init.el` or when you just need to copy a few files over.
 
 Dependencies
 ------------
@@ -52,6 +54,26 @@ In addition, this shows how you can add in arbitrary configuration settings and 
         - name: airline-themes
           config: |-2
             (load-theme 'airline-dark t)
+```
+
+Here's an alternate configuration that just copies configuration from a repository:
+
+```yaml
+- hosts: servers
+  roles:
+  - pridkett.emacs
+  vars:
+    emacs:
+      create_initel: false
+      install_zsh: true
+      install_fish: true
+      copy_files:
+        - url: https://raw.githubusercontent.com/pridkett/org-wagstrom/main/org-wagstrom.el
+          dest: org-wagstrom.el
+        - url: https://raw.githubusercontent.com/pridkett/emacs.d/main/init.el
+          dest: init.el
+        - url: https://raw.githubusercontent.com/pridkett/emacs.d/main/config.org
+          dest: config.org
 ```
 
 License

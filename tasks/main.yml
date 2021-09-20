@@ -94,4 +94,13 @@
     src: emacs.j2
     dest: "{{ emacs_config }}"
     backup: yes
+  when: emacs_create_initel == True
   tags: configure
+
+- name: "Download configuration files from remote urls"
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ ansible_env.HOME }}/.emacs.d/{{ item.dest }}"
+  tags: configure
+  loop: "{{ emacs.copy_files }}"
+  when: emacs.copy_files is defined
