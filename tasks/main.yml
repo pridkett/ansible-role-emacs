@@ -101,6 +101,9 @@
   get_url:
     url: "{{ item.url }}"
     dest: "{{ ansible_env.HOME }}/.emacs.d/{{ item.dest }}"
-  tags: configure
+    url_username: "{{ item.url_username | default(omit) }}"
+    url_password: "{{ item.url_password | default('') }}"
+    force_basic_auth: "{{ item.force_basic_auth | default('no') }}"
   loop: "{{ emacs.copy_files }}"
   when: emacs.copy_files is defined
+  tags: configure
