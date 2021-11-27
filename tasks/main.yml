@@ -15,9 +15,9 @@
   tags: install 
   when: ansible_pkg_mgr == 'homebrew'
 
-- name: Install emacs26 (apt)
+- name: Install emacs27 (apt)
   block:
-    - name: Add Emacs 26 apt repository for Ubuntu
+    - name: Add Emacs 27 apt repository for Ubuntu
       apt_repository:
         repo: ppa:kelleyk/emacs
         state: present
@@ -25,7 +25,7 @@
 
     - name: Install Emacs (apt)
       apt:
-        name: ['emacs26-nox']
+        name: ['emacs27']
         state: present
         update_cache: true
       become: yes
