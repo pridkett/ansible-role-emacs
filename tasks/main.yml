@@ -1,5 +1,7 @@
 ---
 # tasks file for emacs
+#
+# see: https://macowners.club/posts/using-xwidgets-on-macos/
 - name: Install emacs-mac from Railwaycat's repo
   block:
     - name: Tap railwaycat's emacs-mac (homebrew)
@@ -8,27 +10,23 @@
         state: present
 
     - name: Install emacs-mac from bottle (homebrew)
-      community.general.homebrew_cask:
+      community.general.homebrew:
         name: emacs-mac
         state: present
+        install_options: --with-native-comp --with-xwidgets --with-natural-title-bar
+      # community.general.homebrew_cask:
+      # name: emacs-mac
+      # state: present
 
-  tags: install 
+  tags: install
   when: ansible_pkg_mgr == 'homebrew'
 
-- name: Install emacs27 (apt)
-  block:
-    - name: Add Emacs 27 apt repository for Ubuntu
-      apt_repository:
-        repo: ppa:kelleyk/emacs
-        state: present
-      become: yes
-
-    - name: Install Emacs (apt)
-      apt:
-        name: ['emacs27']
-        state: present
-        update_cache: true
-      become: yes
+- name: Install Emacs (apt)
+  apt:
+    name: ["emacs"]
+    state: present
+    update_cache: true
+  become: true
 
   tags: install
   when: ansible_pkg_mgr == 'apt'
