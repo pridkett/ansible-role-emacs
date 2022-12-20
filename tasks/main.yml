@@ -2,21 +2,31 @@
 # tasks file for emacs
 #
 # see: https://macowners.club/posts/using-xwidgets-on-macos/
-- name: Install emacs-mac from Railwaycat's repo
+# see: https://github.com/d12frosted/homebrew-emacs-plus#emacs-29-and-emacs-30
+- name: Install emacs-plus
   block:
-    - name: Tap railwaycat's emacs-mac (homebrew)
+    - name: Tap d12frosted/emacs-plus (homebrew)
       homebrew_tap:
-        name: railwaycat/emacsmacport
+        name: d12frosted/emacs-plus
         state: present
 
-    - name: Install emacs-mac from bottle (homebrew)
+    - name: Install emacs-plus@28 (homebrew)
       community.general.homebrew:
-        name: emacs-mac
+        name: emacs-plus@28
         state: present
-        install_options: --with-native-comp --with-xwidgets --with-natural-title-bar
-      # community.general.homebrew_cask:
-      # name: emacs-mac
-      # state: present
+        install_options: with-xwidgets,with-imagemagick,with-native-comp
+
+    - name: Get installed location (homebrew)
+      shell:
+        cmd: brew list emacs-plus@28 | grep Emacs.app | sed -e 's/Emacs.app.*$/Emacs.app/g' | head -n 1
+      register: emacs_homebrew_installed_path
+
+    - name: Install Emacs.app (homebrew)
+      copy:
+        src: "{{ emacs_homebrew_installed_path.stdout }}"
+        dest: /Applications
+        mode: preserve
+        force: no
 
   tags: install
   when: ansible_pkg_mgr == 'homebrew'
