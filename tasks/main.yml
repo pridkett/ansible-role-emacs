@@ -10,27 +10,34 @@
         name: d12frosted/emacs-plus
         state: present
 
-    - name: Install emacs-plus@28 (homebrew)
+    - name: "Install emacs-plus@{{ emacs_plus_version }} (homebrew)"
       community.general.homebrew:
-        name: emacs-plus@28
+        name: "emacs-plus@{{ emacs_plus_version }}"
         state: present
-        install_options: with-xwidgets,with-imagemagick,with-native-comp
+        install_options: with-xwidgets,with-imagemagick
+        # install_options: with-xwidgets,with-imagemagick,with-native-comp
 
-    - name: Get installed location (homebrew)
-      shell:
-        cmd: brew list emacs-plus@28 | grep Emacs.app | sed -e 's/Emacs.app.*$/Emacs.app/g' | head -n 1
-      register: emacs_homebrew_installed_path
+    # - name: Get installed location (homebrew)
+    #   shell:
+    #     cmd: brew list "emacs-plus@{{ emacs_plus_version }}" | grep Emacs.app | sed -e 's/Emacs.app.*$/Emacs.app/g' | head -n 1
+    #   register: emacs_homebrew_installed_path
 
-    - name: Install Emacs.app (homebrew)
-      copy:
-        src: "{{ emacs_homebrew_installed_path.stdout }}"
-        dest: /Applications
-        mode: preserve
-        force: no
+    # - name: Install Emacs.app (homebrew)
+    #   copy:
+    #     src: "{{ emacs_homebrew_installed_path.stdout }}"
+    #     dest: /Applications
+    #     mode: preserve
+    #     force: no
 
   tags: install
   when: ansible_pkg_mgr == 'homebrew'
 
+- name: Add Emacs PPA for Ubuntu 22.04
+  apt_repository: repo='ppa:ubuntuhandbook1/emacs' state=present
+  become: true
+  tags: install
+  when: ansible_pkg_mgr == 'apt' and ansible_distribution|lower == 'ubuntu' and ansible_distribution_major_version == 22
+    
 - name: Install Emacs (apt)
   apt:
     name: ["emacs"]
@@ -41,55 +48,58 @@
   tags: install
   when: ansible_pkg_mgr == 'apt'
 
-# for Emacs 24-bit color support: https://stackoverflow.com/a/50577683/57626
-- name: Check for 24-bit termcap definition
-  shell:
-    cmd: if [ -d ~/.terminfo ]; then find ~/.terminfo -type f -name xterm-24bits; fi
-  register: find_xterm24bits
-  ignore_errors: true
-  when: ansible_os_family|lower == 'debian' or ansible_os_family|lower == 'darwin'
-  tags: configure
+- name: Legacy Emacs 24-bit support
+  when: emacs.legacy_24bit | default(False)
+  block:
+    # for Emacs 24-bit color support: https://stackoverflow.com/a/50577683/57626
+    - name: Check for 24-bit termcap definition
+      shell:
+        cmd: if [ -d ~/.terminfo ]; then find ~/.terminfo -type f -name xterm-24bits; fi
+      register: find_xterm24bits
+      ignore_errors: true
+      when: ansible_os_family|lower == 'debian' or ansible_os_family|lower == 'darwin'
+      tags: configure
 
-- name: Create temporary file for 24-bit emacs support
-  tempfile:
-    state: file
-    suffix: temp
-  register: tempfile_1
-  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
-  tags: configure
+    - name: Create temporary file for 24-bit emacs support
+      tempfile:
+        state: file
+        suffix: temp
+      register: tempfile_1
+      when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+      tags: configure
+      
+    - name: Set up Emacs for 24-bit support
+      copy:
+        src: emacs-24-bit
+        dest: "{{ tempfile_1.path }}"
+      when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+      tags: configure
 
-- name: Set up Emacs for 24-bit support
-  copy:
-    src: emacs-24-bit
-    dest: "{{ tempfile_1.path }}"
-  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
-  tags: configure
+    - name: Compile Emacs 24-bit terminal
+      shell: "tic -x -o ~/.terminfo {{ tempfile_1.path }}"
+      when: and find_xterm24bits is defined and find_xterm24bits.stdout == ""
+      tags: configure
 
-- name: Compile Emacs 24-bit terminal
-  shell: "tic -x -o ~/.terminfo {{ tempfile_1.path }}"
-  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
-  tags: configure
+    - name: Install 24-bit color zsh alias
+      template:
+        src: emacs.zsh.j2
+        dest: "{{ ansible_env.HOME }}/.zshrc.d/emacs.zsh"
+      when: emacs.install_zsh | default(False) and emacs.legacy_24bit | default(False)
+      tags: configure
 
-- name: Install 24-bit color zsh alias
-  template:
-    src: emacs.zsh.j2
-    dest: "{{ ansible_env.HOME }}/.zshrc.d/emacs.zsh"
-  when: emacs.install_zsh is defined and emacs.install_zsh == True
-  tags: configure
+    - name: Install 24-bit color bash alias
+      template:
+        src: emacs.sh.j2
+        dest: "{{ ansible_env.HOME }}/.bashrc.d/emacs.sh"
+      when: emacs.install_bash | default(False) and emacs.legacy_24bit | default(False)
+      tags: configure
 
-- name: Install 24-bit color bash alias
-  template:
-    src: emacs.sh.j2
-    dest: "{{ ansible_env.HOME }}/.bashrc.d/emacs.sh"
-  when: emacs.install_bash is defined and emacs.install_bash == True
-  tags: configure
-
-- name: Install 24-bit color fish alias
-  template:
-    src: emacs.fish.j2
-    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d/emacs.fish"
-  when: emacs.install_fish is defined and emacs.install_fish == True
-  tags: configure
+    - name: Install 24-bit color fish alias
+      template:
+        src: emacs.fish.j2
+        dest: "{{ ansible_env.HOME }}/.config/fish/fish.d/emacs.fish"
+      when: emacs.install_fish | default(False) and emacs.legacy_24bit | default(False)
+      tags: configure
 
 - name: Create .emacs.d directory
   file:

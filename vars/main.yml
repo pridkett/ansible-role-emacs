@@ -5,3 +5,4 @@ emacs_build_flags: "{% if emacs.build_flags is defined %}{{ emacs.build_flags }}
 emacs_tap: "{% if emacs.install_from_head is defined and emacs.install_from_head == True %}True{% endif %}"
 emacs_bottled: "{% if emacs.build_flags is not defined %}True{% else %}False{% endif %}"
 emacs_create_initel: "{% if (emacs.create_initel is defined and emacs.create_initel == True) or (emacs.create_initel is not defined) %}True{% else %}False{% endif %}"
+emacs_plus_version: 30

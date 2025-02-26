@@ -20,6 +20,7 @@ Role Variables
 - `emacs.create_initel`: Whether or not the script will try to create a templated `~/.emacs.d/init.el`. This defaults to `true`, set to `false` if you're going to be copying your configuration files from elsewhere.
 - `emacs.custom`: emacs-lisp code that will be put at the end of `~/.emacs.d/init.el`. This is generally used for anything that was set up through emacs in-editor configuration. Placing it here means that additional changes will work with the same block of code.
 - `emacs.copy_files`: a list of files to copy into your `~/.emacs.d/` directory. This is useful for when your configuration becomes really complicated and you want to use a completely custom `~/.emacs.d/init.el` or when you just need to copy a few files over.
+- `emacs.legeacy_24bit`: add in some legacy support for 24-bit color in terminals with old versions of emacs (eg ~26.1).
 
 Dependencies
 ------------
