@@ -1,0 +1,50 @@
+---  
+# for Emacs 24-bit color support: https://stackoverflow.com/a/50577683/57626
+- name: Check for 24-bit termcap definition
+  shell:
+    cmd: if [ -d ~/.terminfo ]; then find ~/.terminfo -type f -name xterm-24bits; fi
+  register: find_xterm24bits
+  ignore_errors: true
+  when: ansible_os_family|lower == 'debian' or ansible_os_family|lower == 'darwin'
+  tags: configure
+
+- name: Create temporary file for 24-bit emacs support
+  tempfile:
+    state: file
+    suffix: temp
+  register: tempfile_1
+  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+  tags: configure
+  
+- name: Set up Emacs for 24-bit support
+  copy:
+    src: emacs-24-bit
+    dest: "{{ tempfile_1.path }}"
+  when: find_xterm24bits is defined and find_xterm24bits.stdout == ""
+  tags: configure
+
+- name: Compile Emacs 24-bit terminal
+  shell: "tic -x -o ~/.terminfo {{ tempfile_1.path }}"
+  when: and find_xterm24bits is defined and find_xterm24bits.stdout == ""
+  tags: configure
+
+- name: Install 24-bit color zsh alias
+  template:
+    src: emacs.zsh.j2
+    dest: "{{ ansible_env.HOME }}/.zshrc.d/emacs.zsh"
+  when: emacs.install_zsh | default(False) and emacs.legacy_24bit | default(False)
+  tags: configure
+
+- name: Install 24-bit color bash alias
+  template:
+    src: emacs.sh.j2
+    dest: "{{ ansible_env.HOME }}/.bashrc.d/emacs.sh"
+  when: emacs.install_bash | default(False) and emacs.legacy_24bit | default(False)
+  tags: configure
+
+- name: Install 24-bit color fish alias
+  template:
+    src: emacs.fish.j2
+    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d/emacs.fish"
+  when: emacs.install_fish | default(False) and emacs.legacy_24bit | default(False)
+  tags: configure
